@@ -681,6 +681,7 @@ hes2018 &lt;- hes2018 %&gt;%
 
 hesPooled &lt;- bind_rows(hes2012, hes2015, hes2018) %&gt;%
   left_join(inflation_factors) %&gt;%
+  mutate(year = as_factor(year)) %&gt;%
   mutate(toinc_b18 = toinc/inflation_factor, ttotex_b18 = ttotex/inflation_factor,
          tbeer_b18 = tbeer/inflation_factor, tgin_b18 = tgin/inflation_factor, tcigarette_b18 = tcigarette/inflation_factor) %&gt;%
   mutate(uvbeer = tbeer/qtbeer, uvgin = tgin/qtgin, uvcigarette = tcigarette/qtcigarette,
@@ -842,6 +843,8 @@ hesPooled &lt;- bind_rows(hes2012, hes2015, hes2018) %&gt;%
 
 ols_beerPool &lt;- log(qtbeer) ~ log(uvbeer_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year)
 
+ols_beerPoolInteraction &lt;- log(qtbeer) ~ log(uvbeer_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban
+
 
 ols_b2012 &lt;- lm(formula = ols_beer, data = hes2012, weights = rfact)
 
@@ -851,31 +854,33 @@ ols_b2018 &lt;- lm(formula = ols_beer, data = hes2018, weights = rfact)
 
 ols_bPool &lt;- lm(ols_beerPool, data = hesPooled, weights = rfact)
 
-stargazer(ols_b2012, ols_b2015, ols_b2018, ols_bPool,
+ols_bInt &lt;- lm(ols_beerPoolInteraction, data = hesPooled, weights = rfact)
+
+stargazer(ols_b2012, ols_b2015, ols_b2018, ols_bPool, ols_bInt,
           type=&quot;html&quot;,
-          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;))</code></pre>
+          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;, &quot;Pooled, With Year Interaction&quot;))</code></pre>
 <table style="text-align:center">
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 <em>Dependent variable:</em>
 </td>
 </tr>
 <tr>
 <td>
 </td>
-<td colspan="4" style="border-bottom: 1px solid black">
+<td colspan="5" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 log(qtbeer)
 </td>
 </tr>
@@ -894,6 +899,9 @@ log(qtbeer)
 <td>
 Pooled
 </td>
+<td>
+Pooled, With Year Interaction
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -910,9 +918,12 @@ Pooled
 <td>
 (4)
 </td>
+<td>
+(5)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -927,6 +938,8 @@ log(uvbeer)
 </td>
 <td>
 -0.574<sup>***</sup>
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -945,9 +958,13 @@ log(uvbeer)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -973,6 +990,8 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -988,9 +1007,13 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1014,6 +1037,9 @@ log(uvbeer_b18)
 <td>
 -0.486<sup>***</sup>
 </td>
+<td>
+-1.032<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1027,9 +1053,104 @@ log(uvbeer_b18)
 <td>
 (0.036)
 </td>
+<td>
+(0.053)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+3.533<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.187)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.845<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.204)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1053,6 +1174,9 @@ log(toinc_b18)
 <td>
 0.448<sup>***</sup>
 </td>
+<td>
+0.445<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1066,9 +1190,14 @@ log(toinc_b18)
 <td>
 (0.007)
 </td>
+<td>
+(0.007)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1095,6 +1224,9 @@ hhead_male
 <td>
 0.154<sup>***</sup>
 </td>
+<td>
+0.153<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1111,9 +1243,14 @@ hhead_male
 <td>
 (0.016)
 </td>
+<td>
+(0.016)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1140,6 +1277,9 @@ hhead_age
 <td>
 -0.003<sup>***</sup>
 </td>
+<td>
+-0.003<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1156,9 +1296,14 @@ hhead_age
 <td>
 (0.0004)
 </td>
+<td>
+(0.0004)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1185,6 +1330,9 @@ hhead_married
 <td>
 -0.119<sup>***</sup>
 </td>
+<td>
+-0.119<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1201,9 +1349,14 @@ hhead_married
 <td>
 (0.015)
 </td>
+<td>
+(0.015)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1230,6 +1383,9 @@ hhead_employed
 <td>
 0.061<sup>***</sup>
 </td>
+<td>
+0.059<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1246,9 +1402,14 @@ hhead_employed
 <td>
 (0.013)
 </td>
+<td>
+(0.013)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1275,6 +1436,9 @@ members
 <td>
 0.014<sup>***</sup>
 </td>
+<td>
+0.014<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1291,9 +1455,14 @@ members
 <td>
 (0.002)
 </td>
+<td>
+(0.002)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1320,6 +1489,9 @@ I(members_adultmale/members)
 <td>
 0.453<sup>***</sup>
 </td>
+<td>
+0.450<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1336,9 +1508,14 @@ I(members_adultmale/members)
 <td>
 (0.026)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1365,6 +1542,9 @@ region_label14 Cordillera Administrative Region
 <td>
 -0.732<sup>***</sup>
 </td>
+<td>
+-0.744<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1381,9 +1561,14 @@ region_label14 Cordillera Administrative Region
 <td>
 (0.043)
 </td>
+<td>
+(0.043)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1410,6 +1595,9 @@ region_label01 Ilocos Region
 <td>
 -0.075<sup>***</sup>
 </td>
+<td>
+-0.102<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1426,9 +1614,14 @@ region_label01 Ilocos Region
 <td>
 (0.026)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1455,6 +1648,9 @@ region_label02 Cagayan Valley
 <td>
 0.099<sup>***</sup>
 </td>
+<td>
+0.076<sup>**</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1471,9 +1667,14 @@ region_label02 Cagayan Valley
 <td>
 (0.030)
 </td>
+<td>
+(0.030)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1500,6 +1701,9 @@ region_label03 Central Luzon
 <td>
 -0.059<sup>***</sup>
 </td>
+<td>
+-0.071<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1516,9 +1720,14 @@ region_label03 Central Luzon
 <td>
 (0.017)
 </td>
+<td>
+(0.017)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1545,6 +1754,9 @@ region_label04 CALABARZON
 <td>
 -0.021
 </td>
+<td>
+-0.032<sup>*</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1561,9 +1773,14 @@ region_label04 CALABARZON
 <td>
 (0.017)
 </td>
+<td>
+(0.017)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1590,6 +1807,9 @@ region_label17 MIMAROPA
 <td>
 -0.245<sup>***</sup>
 </td>
+<td>
+-0.253<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1606,9 +1826,14 @@ region_label17 MIMAROPA
 <td>
 (0.038)
 </td>
+<td>
+(0.038)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1635,6 +1860,9 @@ region_label05 Bicol Region
 <td>
 -0.458<sup>***</sup>
 </td>
+<td>
+-0.443<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1651,9 +1879,14 @@ region_label05 Bicol Region
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1680,6 +1913,9 @@ region_label06 Western Visayas
 <td>
 -0.005
 </td>
+<td>
+0.020
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1696,9 +1932,14 @@ region_label06 Western Visayas
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1725,6 +1966,9 @@ region_label07 Central Visayas
 <td>
 -0.148<sup>***</sup>
 </td>
+<td>
+-0.183<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1741,9 +1985,14 @@ region_label07 Central Visayas
 <td>
 (0.018)
 </td>
+<td>
+(0.018)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1770,6 +2019,9 @@ region_label08 Eastern Visayas
 <td>
 -0.246<sup>***</sup>
 </td>
+<td>
+-0.241<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1786,9 +2038,14 @@ region_label08 Eastern Visayas
 <td>
 (0.026)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1815,6 +2072,9 @@ region_label09 Zamboanga Peninsula
 <td>
 -0.327<sup>***</sup>
 </td>
+<td>
+-0.321<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1831,9 +2091,14 @@ region_label09 Zamboanga Peninsula
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1860,6 +2125,9 @@ region_label10 Northern Mindanao
 <td>
 -0.244<sup>***</sup>
 </td>
+<td>
+-0.259<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1876,9 +2144,14 @@ region_label10 Northern Mindanao
 <td>
 (0.024)
 </td>
+<td>
+(0.024)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1905,6 +2178,9 @@ region_label11 Davao Region
 <td>
 -0.063<sup>***</sup>
 </td>
+<td>
+-0.089<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1921,9 +2197,14 @@ region_label11 Davao Region
 <td>
 (0.022)
 </td>
+<td>
+(0.022)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1950,6 +2231,9 @@ region_label12 SOCCSKSARGEN
 <td>
 -0.006
 </td>
+<td>
+0.037
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -1966,9 +2250,14 @@ region_label12 SOCCSKSARGEN
 <td>
 (0.027)
 </td>
+<td>
+(0.027)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -1995,6 +2284,9 @@ region_label16 CARAGA Region
 <td>
 -0.251<sup>***</sup>
 </td>
+<td>
+-0.223<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2011,9 +2303,14 @@ region_label16 CARAGA Region
 <td>
 (0.031)
 </td>
+<td>
+(0.031)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2040,6 +2337,9 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 -0.581<sup>***</sup>
 </td>
+<td>
+-0.635<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2056,9 +2356,14 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 (0.087)
 </td>
+<td>
+(0.087)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2085,6 +2390,9 @@ urbanUrban
 <td>
 0.201<sup>***</sup>
 </td>
+<td>
+0.202<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2101,9 +2409,14 @@ urbanUrban
 <td>
 (0.011)
 </td>
+<td>
+(0.011)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2127,6 +2440,8 @@ factor(year)2015
 <td>
 0.037<sup>**</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2140,9 +2455,13 @@ factor(year)2015
 <td>
 (0.018)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2166,6 +2485,8 @@ factor(year)2018
 <td>
 0.117<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2179,9 +2500,103 @@ factor(year)2018
 <td>
 (0.019)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvbeer_b18):year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.575<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.084)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvbeer_b18):year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.402<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.090)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2208,6 +2623,9 @@ Constant
 <td>
 2.122<sup>***</sup>
 </td>
+<td>
+1.096<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2224,6 +2642,9 @@ Constant
 <td>
 (0.118)
 </td>
+<td>
+(0.139)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2236,9 +2657,11 @@ Constant
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -2253,6 +2676,9 @@ Observations
 </td>
 <td>
 44,545
+</td>
+<td>
+65,867
 </td>
 <td>
 65,867
@@ -2274,6 +2700,9 @@ R<sup>2</sup>
 <td>
 0.134
 </td>
+<td>
+0.139
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2290,6 +2719,9 @@ Adjusted R<sup>2</sup>
 </td>
 <td>
 0.134
+</td>
+<td>
+0.138
 </td>
 </tr>
 <tr>
@@ -2308,6 +2740,9 @@ Residual Std. Error
 <td>
 20.202 (df = 65839)
 </td>
+<td>
+20.147 (df = 65837)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2325,16 +2760,19 @@ F Statistic
 <td>
 377.743<sup>***</sup> (df = 27; 65839)
 </td>
+<td>
+365.965<sup>***</sup> (df = 29; 65837)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 <em>Note:</em>
 </td>
-<td colspan="4" style="text-align:right">
+<td colspan="5" style="text-align:right">
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05;
 <sup></strong></em></sup>p&lt;0.01
 </td>
@@ -2347,6 +2785,8 @@ F Statistic
 
 ols_ginPool &lt;- log(qtgin) ~ log(uvgin_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year)
 
+ols_ginPoolInteraction &lt;- log(qtgin) ~ log(uvgin_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban
+
 
 ols_g2012 &lt;- lm(formula = ols_gin, data = hes2012, weights = rfact)
 
@@ -2356,31 +2796,33 @@ ols_g2018 &lt;- lm(formula = ols_gin, data = hes2018, weights = rfact)
 
 ols_gPool &lt;- lm(ols_ginPool, data = hesPooled, weights = rfact)
 
-stargazer(ols_g2012, ols_g2015, ols_g2018, ols_gPool,
+ols_gInt &lt;- lm(ols_ginPoolInteraction, data = hesPooled, weights = rfact)
+
+stargazer(ols_g2012, ols_g2015, ols_g2018, ols_gPool, ols_gInt,
           type=&quot;html&quot;,
-          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;))</code></pre>
+          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;, &quot;Pooled, With Year Interaction&quot;))</code></pre>
 <table style="text-align:center">
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 <em>Dependent variable:</em>
 </td>
 </tr>
 <tr>
 <td>
 </td>
-<td colspan="4" style="border-bottom: 1px solid black">
+<td colspan="5" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 log(qtgin)
 </td>
 </tr>
@@ -2399,6 +2841,9 @@ log(qtgin)
 <td>
 Pooled
 </td>
+<td>
+Pooled, With Year Interaction
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2415,9 +2860,12 @@ Pooled
 <td>
 (4)
 </td>
+<td>
+(5)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -2432,6 +2880,8 @@ log(uvgin)
 </td>
 <td>
 0.029
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2450,9 +2900,13 @@ log(uvgin)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2478,6 +2932,8 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2493,9 +2949,13 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2519,6 +2979,9 @@ log(uvgin_b18)
 <td>
 -0.993<sup>***</sup>
 </td>
+<td>
+-1.050<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2532,9 +2995,104 @@ log(uvgin_b18)
 <td>
 (0.025)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.781<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.283)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.328<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.312)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2558,6 +3116,9 @@ log(toinc_b18)
 <td>
 0.277<sup>***</sup>
 </td>
+<td>
+0.273<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2571,9 +3132,14 @@ log(toinc_b18)
 <td>
 (0.010)
 </td>
+<td>
+(0.010)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2600,6 +3166,9 @@ hhead_male
 <td>
 0.135<sup>***</sup>
 </td>
+<td>
+0.135<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2616,9 +3185,14 @@ hhead_male
 <td>
 (0.023)
 </td>
+<td>
+(0.023)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2645,6 +3219,9 @@ hhead_age
 <td>
 -0.0003
 </td>
+<td>
+-0.0003
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2661,9 +3238,14 @@ hhead_age
 <td>
 (0.001)
 </td>
+<td>
+(0.001)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2690,6 +3272,9 @@ hhead_married
 <td>
 -0.115<sup>***</sup>
 </td>
+<td>
+-0.113<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2706,9 +3291,14 @@ hhead_married
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2735,6 +3325,9 @@ hhead_employed
 <td>
 0.111<sup>***</sup>
 </td>
+<td>
+0.110<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2751,9 +3344,14 @@ hhead_employed
 <td>
 (0.018)
 </td>
+<td>
+(0.018)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2780,6 +3378,9 @@ members
 <td>
 0.018<sup>***</sup>
 </td>
+<td>
+0.018<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2796,9 +3397,14 @@ members
 <td>
 (0.003)
 </td>
+<td>
+(0.003)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2825,6 +3431,9 @@ I(members_adultmale/members)
 <td>
 0.463<sup>***</sup>
 </td>
+<td>
+0.466<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2841,9 +3450,14 @@ I(members_adultmale/members)
 <td>
 (0.034)
 </td>
+<td>
+(0.034)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2870,6 +3484,9 @@ region_label14 Cordillera Administrative Region
 <td>
 0.034
 </td>
+<td>
+-0.007
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2886,9 +3503,14 @@ region_label14 Cordillera Administrative Region
 <td>
 (0.031)
 </td>
+<td>
+(0.032)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2915,6 +3537,9 @@ region_label01 Ilocos Region
 <td>
 0.561<sup>***</sup>
 </td>
+<td>
+0.565<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2931,9 +3556,14 @@ region_label01 Ilocos Region
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -2960,6 +3590,9 @@ region_label02 Cagayan Valley
 <td>
 0.727<sup>***</sup>
 </td>
+<td>
+0.727<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -2976,9 +3609,14 @@ region_label02 Cagayan Valley
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3005,6 +3643,9 @@ region_label03 Central Luzon
 <td>
 0.019
 </td>
+<td>
+0.033
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3021,9 +3662,14 @@ region_label03 Central Luzon
 <td>
 (0.027)
 </td>
+<td>
+(0.027)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3050,6 +3696,9 @@ region_label04 CALABARZON
 <td>
 0.335<sup>***</sup>
 </td>
+<td>
+0.305<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3066,9 +3715,14 @@ region_label04 CALABARZON
 <td>
 (0.026)
 </td>
+<td>
+(0.027)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3095,6 +3749,9 @@ region_label17 MIMAROPA
 <td>
 0.573<sup>***</sup>
 </td>
+<td>
+0.539<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3111,9 +3768,14 @@ region_label17 MIMAROPA
 <td>
 (0.030)
 </td>
+<td>
+(0.031)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3140,6 +3802,9 @@ region_label05 Bicol Region
 <td>
 -0.0001
 </td>
+<td>
+-0.013
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3156,9 +3821,14 @@ region_label05 Bicol Region
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3185,6 +3855,9 @@ region_label06 Western Visayas
 <td>
 0.084
 </td>
+<td>
+0.088<sup>*</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3201,9 +3874,14 @@ region_label06 Western Visayas
 <td>
 (0.053)
 </td>
+<td>
+(0.053)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3230,6 +3908,9 @@ region_label07 Central Visayas
 <td>
 -0.281<sup>***</sup>
 </td>
+<td>
+-0.268<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3246,9 +3927,14 @@ region_label07 Central Visayas
 <td>
 (0.067)
 </td>
+<td>
+(0.067)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3275,6 +3961,9 @@ region_label08 Eastern Visayas
 <td>
 -0.509<sup>***</sup>
 </td>
+<td>
+-0.487<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3291,9 +3980,14 @@ region_label08 Eastern Visayas
 <td>
 (0.049)
 </td>
+<td>
+(0.050)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3320,6 +4014,9 @@ region_label09 Zamboanga Peninsula
 <td>
 -0.345<sup>***</sup>
 </td>
+<td>
+-0.398<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3336,9 +4033,14 @@ region_label09 Zamboanga Peninsula
 <td>
 (0.123)
 </td>
+<td>
+(0.123)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3365,6 +4067,9 @@ region_label10 Northern Mindanao
 <td>
 -0.592<sup>***</sup>
 </td>
+<td>
+-0.582<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3381,9 +4086,14 @@ region_label10 Northern Mindanao
 <td>
 (0.101)
 </td>
+<td>
+(0.100)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3410,6 +4120,9 @@ region_label11 Davao Region
 <td>
 -0.133<sup>*</sup>
 </td>
+<td>
+-0.181<sup>**</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3426,9 +4139,14 @@ region_label11 Davao Region
 <td>
 (0.080)
 </td>
+<td>
+(0.080)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3455,6 +4173,9 @@ region_label12 SOCCSKSARGEN
 <td>
 -0.289<sup>***</sup>
 </td>
+<td>
+-0.324<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3471,9 +4192,14 @@ region_label12 SOCCSKSARGEN
 <td>
 (0.107)
 </td>
+<td>
+(0.107)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3500,6 +4226,9 @@ region_label16 CARAGA Region
 <td>
 -0.385<sup>***</sup>
 </td>
+<td>
+-0.363<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3516,9 +4245,14 @@ region_label16 CARAGA Region
 <td>
 (0.105)
 </td>
+<td>
+(0.105)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3545,6 +4279,9 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 -0.609<sup>***</sup>
 </td>
+<td>
+-0.909<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3561,9 +4298,14 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 (0.149)
 </td>
+<td>
+(0.158)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3590,6 +4332,9 @@ urbanUrban
 <td>
 -0.032<sup>**</sup>
 </td>
+<td>
+-0.029<sup>*</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3606,9 +4351,14 @@ urbanUrban
 <td>
 (0.016)
 </td>
+<td>
+(0.016)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3632,6 +4382,8 @@ factor(year)2015
 <td>
 0.070<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3645,9 +4397,13 @@ factor(year)2015
 <td>
 (0.017)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3671,6 +4427,8 @@ factor(year)2018
 <td>
 0.049<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3684,9 +4442,103 @@ factor(year)2018
 <td>
 (0.016)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvgin_b18):year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.813<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.134)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvgin_b18):year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.616<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.149)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3713,6 +4565,9 @@ Constant
 <td>
 2.550<sup>***</sup>
 </td>
+<td>
+2.504<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3729,6 +4584,9 @@ Constant
 <td>
 (0.137)
 </td>
+<td>
+(0.137)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3741,9 +4599,11 @@ Constant
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -3758,6 +4618,9 @@ Observations
 </td>
 <td>
 26,916
+</td>
+<td>
+38,776
 </td>
 <td>
 38,776
@@ -3779,6 +4642,9 @@ R<sup>2</sup>
 <td>
 0.168
 </td>
+<td>
+0.169
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3795,6 +4661,9 @@ Adjusted R<sup>2</sup>
 </td>
 <td>
 0.168
+</td>
+<td>
+0.169
 </td>
 </tr>
 <tr>
@@ -3813,6 +4682,9 @@ Residual Std. Error
 <td>
 17.708 (df = 38748)
 </td>
+<td>
+17.697 (df = 38746)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3830,16 +4702,19 @@ F Statistic
 <td>
 290.290<sup>***</sup> (df = 27; 38748)
 </td>
+<td>
+272.251<sup>***</sup> (df = 29; 38746)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 <em>Note:</em>
 </td>
-<td colspan="4" style="text-align:right">
+<td colspan="5" style="text-align:right">
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05;
 <sup></strong></em></sup>p&lt;0.01
 </td>
@@ -3852,6 +4727,8 @@ F Statistic
 
 ols_cigarettePool &lt;- log(qtcigarette) ~ log(uvcigarette_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year)
 
+ols_cigarettePoolInteraction &lt;- log(qtcigarette) ~ log(uvcigarette_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban
+
 
 ols_c2012 &lt;- lm(formula = ols_cigarette, data = hes2012, weights = rfact)
 
@@ -3861,31 +4738,33 @@ ols_c2018 &lt;- lm(formula = ols_cigarette, data = hes2018, weights = rfact)
 
 ols_cPool &lt;- lm(ols_cigarettePool, data = hesPooled, weights = rfact)
 
-stargazer(ols_c2012, ols_c2015, ols_c2018, ols_cPool,
+ols_cInt &lt;- lm(ols_cigarettePoolInteraction, data = hesPooled, weights = rfact)
+
+stargazer(ols_c2012, ols_c2015, ols_c2018, ols_cPool, ols_cInt,
           type=&quot;html&quot;,
-          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;))</code></pre>
+          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;, &quot;Pooled, With Year Interaction&quot;))</code></pre>
 <table style="text-align:center">
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 <em>Dependent variable:</em>
 </td>
 </tr>
 <tr>
 <td>
 </td>
-<td colspan="4" style="border-bottom: 1px solid black">
+<td colspan="5" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 log(qtcigarette)
 </td>
 </tr>
@@ -3904,6 +4783,9 @@ log(qtcigarette)
 <td>
 Pooled
 </td>
+<td>
+Pooled, With Year Interaction
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3920,9 +4802,12 @@ Pooled
 <td>
 (4)
 </td>
+<td>
+(5)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -3937,6 +4822,8 @@ log(uvcigarette)
 </td>
 <td>
 -0.394<sup>***</sup>
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3955,9 +4842,13 @@ log(uvcigarette)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -3983,6 +4874,8 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -3998,9 +4891,13 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4024,6 +4921,9 @@ log(uvcigarette_b18)
 <td>
 -0.605<sup>***</sup>
 </td>
+<td>
+-0.974<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4037,9 +4937,104 @@ log(uvcigarette_b18)
 <td>
 (0.018)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.295<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.055)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.453<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.038)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4063,6 +5058,9 @@ log(toinc_b18)
 <td>
 0.364<sup>***</sup>
 </td>
+<td>
+0.366<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4076,9 +5074,14 @@ log(toinc_b18)
 <td>
 (0.006)
 </td>
+<td>
+(0.006)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4105,6 +5108,9 @@ hhead_male
 <td>
 0.113<sup>***</sup>
 </td>
+<td>
+0.116<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4121,9 +5127,14 @@ hhead_male
 <td>
 (0.013)
 </td>
+<td>
+(0.013)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4150,6 +5161,9 @@ hhead_age
 <td>
 -0.002<sup>***</sup>
 </td>
+<td>
+-0.002<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4166,9 +5180,14 @@ hhead_age
 <td>
 (0.0003)
 </td>
+<td>
+(0.0003)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4195,6 +5214,9 @@ hhead_married
 <td>
 -0.067<sup>***</sup>
 </td>
+<td>
+-0.067<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4211,9 +5233,14 @@ hhead_married
 <td>
 (0.011)
 </td>
+<td>
+(0.011)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4240,6 +5267,9 @@ hhead_employed
 <td>
 0.076<sup>***</sup>
 </td>
+<td>
+0.075<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4256,9 +5286,14 @@ hhead_employed
 <td>
 (0.010)
 </td>
+<td>
+(0.010)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4285,6 +5320,9 @@ members
 <td>
 0.021<sup>***</sup>
 </td>
+<td>
+0.020<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4301,9 +5339,14 @@ members
 <td>
 (0.002)
 </td>
+<td>
+(0.002)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4330,6 +5373,9 @@ I(members_adultmale/members)
 <td>
 0.441<sup>***</sup>
 </td>
+<td>
+0.438<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4346,9 +5392,14 @@ I(members_adultmale/members)
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4375,6 +5426,9 @@ region_label14 Cordillera Administrative Region
 <td>
 -0.559<sup>***</sup>
 </td>
+<td>
+-0.603<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4391,9 +5445,14 @@ region_label14 Cordillera Administrative Region
 <td>
 (0.034)
 </td>
+<td>
+(0.034)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4420,6 +5479,9 @@ region_label01 Ilocos Region
 <td>
 -0.083<sup>***</sup>
 </td>
+<td>
+-0.078<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4436,9 +5498,14 @@ region_label01 Ilocos Region
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4465,6 +5532,9 @@ region_label02 Cagayan Valley
 <td>
 -0.075<sup>***</sup>
 </td>
+<td>
+-0.077<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4481,9 +5551,14 @@ region_label02 Cagayan Valley
 <td>
 (0.022)
 </td>
+<td>
+(0.022)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4510,6 +5585,9 @@ region_label03 Central Luzon
 <td>
 0.435<sup>***</sup>
 </td>
+<td>
+0.450<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4526,9 +5604,14 @@ region_label03 Central Luzon
 <td>
 (0.014)
 </td>
+<td>
+(0.014)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4555,6 +5638,9 @@ region_label04 CALABARZON
 <td>
 0.378<sup>***</sup>
 </td>
+<td>
+0.346<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4571,9 +5657,14 @@ region_label04 CALABARZON
 <td>
 (0.014)
 </td>
+<td>
+(0.014)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4600,6 +5691,9 @@ region_label17 MIMAROPA
 <td>
 -0.068<sup>***</sup>
 </td>
+<td>
+-0.108<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4616,9 +5710,14 @@ region_label17 MIMAROPA
 <td>
 (0.024)
 </td>
+<td>
+(0.024)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4645,6 +5744,9 @@ region_label05 Bicol Region
 <td>
 -0.060<sup>***</sup>
 </td>
+<td>
+-0.077<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4661,9 +5763,14 @@ region_label05 Bicol Region
 <td>
 (0.019)
 </td>
+<td>
+(0.019)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4690,6 +5797,9 @@ region_label06 Western Visayas
 <td>
 0.014
 </td>
+<td>
+-0.026
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4706,9 +5816,14 @@ region_label06 Western Visayas
 <td>
 (0.017)
 </td>
+<td>
+(0.017)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4735,6 +5850,9 @@ region_label07 Central Visayas
 <td>
 -0.347<sup>***</sup>
 </td>
+<td>
+-0.334<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4751,9 +5869,14 @@ region_label07 Central Visayas
 <td>
 (0.018)
 </td>
+<td>
+(0.018)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4780,6 +5903,9 @@ region_label08 Eastern Visayas
 <td>
 -0.111<sup>***</sup>
 </td>
+<td>
+-0.150<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4796,9 +5922,14 @@ region_label08 Eastern Visayas
 <td>
 (0.022)
 </td>
+<td>
+(0.023)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4825,6 +5956,9 @@ region_label09 Zamboanga Peninsula
 <td>
 -0.298<sup>***</sup>
 </td>
+<td>
+-0.305<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4841,9 +5975,14 @@ region_label09 Zamboanga Peninsula
 <td>
 (0.021)
 </td>
+<td>
+(0.021)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4870,6 +6009,9 @@ region_label10 Northern Mindanao
 <td>
 -0.271<sup>***</sup>
 </td>
+<td>
+-0.286<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4886,9 +6028,14 @@ region_label10 Northern Mindanao
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4915,6 +6062,9 @@ region_label11 Davao Region
 <td>
 -0.023
 </td>
+<td>
+-0.071<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4931,9 +6081,14 @@ region_label11 Davao Region
 <td>
 (0.018)
 </td>
+<td>
+(0.019)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -4960,6 +6115,9 @@ region_label12 SOCCSKSARGEN
 <td>
 0.277<sup>***</sup>
 </td>
+<td>
+0.245<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -4976,9 +6134,14 @@ region_label12 SOCCSKSARGEN
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5005,6 +6168,9 @@ region_label16 CARAGA Region
 <td>
 -0.222<sup>***</sup>
 </td>
+<td>
+-0.232<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5021,9 +6187,14 @@ region_label16 CARAGA Region
 <td>
 (0.026)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5050,6 +6221,9 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 -0.237<sup>***</sup>
 </td>
+<td>
+-0.226<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5066,9 +6240,14 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 (0.022)
 </td>
+<td>
+(0.022)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5095,6 +6274,9 @@ urbanUrban
 <td>
 0.030<sup>***</sup>
 </td>
+<td>
+0.029<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5111,9 +6293,14 @@ urbanUrban
 <td>
 (0.008)
 </td>
+<td>
+(0.008)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5137,6 +6324,8 @@ factor(year)2015
 <td>
 0.145<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5150,9 +6339,13 @@ factor(year)2015
 <td>
 (0.011)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5176,6 +6369,8 @@ factor(year)2018
 <td>
 0.124<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5189,9 +6384,103 @@ factor(year)2018
 <td>
 (0.013)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvcigarette_b18):year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.516<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.051)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvcigarette_b18):year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.610<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.036)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5218,6 +6507,9 @@ Constant
 <td>
 2.684<sup>***</sup>
 </td>
+<td>
+2.950<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5234,6 +6526,9 @@ Constant
 <td>
 (0.073)
 </td>
+<td>
+(0.074)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5246,9 +6541,11 @@ Constant
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -5263,6 +6560,9 @@ Observations
 </td>
 <td>
 62,133
+</td>
+<td>
+102,550
 </td>
 <td>
 102,550
@@ -5284,6 +6584,9 @@ R<sup>2</sup>
 <td>
 0.132
 </td>
+<td>
+0.134
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5300,6 +6603,9 @@ Adjusted R<sup>2</sup>
 </td>
 <td>
 0.131
+</td>
+<td>
+0.134
 </td>
 </tr>
 <tr>
@@ -5318,6 +6624,9 @@ Residual Std. Error
 <td>
 19.603 (df = 102522)
 </td>
+<td>
+19.575 (df = 102520)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5335,16 +6644,19 @@ F Statistic
 <td>
 575.467<sup>***</sup> (df = 27; 102522)
 </td>
+<td>
+547.626<sup>***</sup> (df = 29; 102520)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 <em>Note:</em>
 </td>
-<td colspan="4" style="text-align:right">
+<td colspan="5" style="text-align:right">
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05;
 <sup></strong></em></sup>p&lt;0.01
 </td>
@@ -5390,12 +6702,16 @@ heckman1_beer &lt;- nonzero_beer ~ log(uvbeer) + log(toinc) + hhead_male + hhead
 
 heckman1_beerPool &lt;- nonzero_beer ~ log(uvbeer_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + I(members_age05below/members) + members_hgc + factor(year)
 
+heckman1_beerPoolInteraction &lt;- nonzero_beer ~ log(uvbeer_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + I(members_age05below/members) + members_hgc
+
 stage1_vars &lt;- c(&quot;nonzero_beer&quot;, &quot;qtbeer&quot;, &quot;uvbeer&quot;, &quot;toinc&quot;, &quot;hhead_male&quot;, &quot;hhead_age&quot;, &quot;hhead_married&quot;, &quot;hhead_employed&quot;, &quot;members&quot;, &quot;members_adultmale&quot;, &quot;region_label&quot;, &quot;urban&quot;, &quot;members_age05below&quot;, &quot;members_hgc&quot;)
 
 # Beer Stage 2 Outcome
 heckman2_beer &lt;- log(qtbeer) ~ log(uvbeer) + log(toinc) + hhead_male + hhead_age + hhead_married + hhead_employed +  members + I(members_adultmale/members) + region_label + urban + imr_beer
 
 heckman2_beerPool &lt;- log(qtbeer) ~ log(uvbeer_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year) + imr_beer
+
+heckman2_beerPoolInteraction &lt;- log(qtbeer) ~ log(uvbeer_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + imr_beer
 
 
 #### Beer 2012 - Heckman ####
@@ -5482,31 +6798,52 @@ hm2_bPool &lt;- lm(
 )
 
 
-stargazer(hm2_b2012, hm2_b2015, hm2_b2018, hm2_bPool,
+#### Beer POOLED with Year Interaction Term - Heckman ####
+# Stage 1 Selection Model
+hm1_bInt &lt;- glm(
+  formula = heckman1_beerPoolInteraction, data = hesPooled, weights = rfact, family = binomial(link = &#39;probit&#39;)
+)
+
+# Calculate the inverse Mills ratio
+lambda_beer &lt;- predict(hm1_bInt, type = &quot;link&quot;)  # Linear predictor
+imr_beer &lt;- dnorm(lambda_beer) / pnorm(lambda_beer)  # Inverse Mills Ratio
+
+# Add the inverse Mills ratio to the data
+stage2_bInt &lt;- hesPooled %&gt;%
+  filter(if_all(.cols = all_of(stage1_vars), .fns = ~!is.na(.x))) %&gt;%
+  bind_cols(tibble(imr_beer = imr_beer))
+
+# Stage 2 Outcome Model
+hm2_bInt &lt;- lm(
+  formula = heckman2_beerPoolInteraction, data = stage2_bInt, weights = rfact, subset = (nonzero_beer == TRUE)
+)
+
+
+stargazer(hm2_b2012, hm2_b2015, hm2_b2018, hm2_bPool, hm2_bInt,
           type=&quot;html&quot;,
-          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;))</code></pre>
+          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;, &quot;Pooled, With Year Interaction&quot;))</code></pre>
 <table style="text-align:center">
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 <em>Dependent variable:</em>
 </td>
 </tr>
 <tr>
 <td>
 </td>
-<td colspan="4" style="border-bottom: 1px solid black">
+<td colspan="5" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 log(qtbeer)
 </td>
 </tr>
@@ -5525,6 +6862,9 @@ log(qtbeer)
 <td>
 Pooled
 </td>
+<td>
+Pooled, With Year Interaction
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5541,9 +6881,12 @@ Pooled
 <td>
 (4)
 </td>
+<td>
+(5)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -5558,6 +6901,8 @@ log(uvbeer)
 </td>
 <td>
 -0.746<sup>***</sup>
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5576,9 +6921,13 @@ log(uvbeer)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5604,6 +6953,8 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5619,9 +6970,13 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5645,6 +7000,9 @@ log(uvbeer_b18)
 <td>
 -0.471<sup>***</sup>
 </td>
+<td>
+-1.029<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5658,9 +7016,104 @@ log(uvbeer_b18)
 <td>
 (0.036)
 </td>
+<td>
+(0.053)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+3.615<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.187)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.055<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.207)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5684,6 +7137,9 @@ log(toinc_b18)
 <td>
 0.449<sup>***</sup>
 </td>
+<td>
+0.446<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5697,9 +7153,14 @@ log(toinc_b18)
 <td>
 (0.007)
 </td>
+<td>
+(0.007)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5726,6 +7187,9 @@ hhead_male
 <td>
 0.155<sup>***</sup>
 </td>
+<td>
+0.153<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5742,9 +7206,14 @@ hhead_male
 <td>
 (0.016)
 </td>
+<td>
+(0.016)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5771,6 +7240,9 @@ hhead_age
 <td>
 -0.003<sup>***</sup>
 </td>
+<td>
+-0.003<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5787,9 +7259,14 @@ hhead_age
 <td>
 (0.0004)
 </td>
+<td>
+(0.0004)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5816,6 +7293,9 @@ hhead_married
 <td>
 -0.122<sup>***</sup>
 </td>
+<td>
+-0.122<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5832,9 +7312,14 @@ hhead_married
 <td>
 (0.015)
 </td>
+<td>
+(0.015)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5861,6 +7346,9 @@ hhead_employed
 <td>
 0.059<sup>***</sup>
 </td>
+<td>
+0.057<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5877,9 +7365,14 @@ hhead_employed
 <td>
 (0.013)
 </td>
+<td>
+(0.013)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5906,6 +7399,9 @@ members
 <td>
 0.014<sup>***</sup>
 </td>
+<td>
+0.014<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5922,9 +7418,14 @@ members
 <td>
 (0.002)
 </td>
+<td>
+(0.002)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5951,6 +7452,9 @@ I(members_adultmale/members)
 <td>
 0.455<sup>***</sup>
 </td>
+<td>
+0.452<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -5967,9 +7471,14 @@ I(members_adultmale/members)
 <td>
 (0.026)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -5996,6 +7505,9 @@ region_label14 Cordillera Administrative Region
 <td>
 -0.504<sup>***</sup>
 </td>
+<td>
+-0.490<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6012,9 +7524,14 @@ region_label14 Cordillera Administrative Region
 <td>
 (0.057)
 </td>
+<td>
+(0.057)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6041,6 +7558,9 @@ region_label01 Ilocos Region
 <td>
 -0.079<sup>***</sup>
 </td>
+<td>
+-0.108<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6057,9 +7577,14 @@ region_label01 Ilocos Region
 <td>
 (0.026)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6086,6 +7611,9 @@ region_label02 Cagayan Valley
 <td>
 0.155<sup>***</sup>
 </td>
+<td>
+0.137<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6102,9 +7630,14 @@ region_label02 Cagayan Valley
 <td>
 (0.031)
 </td>
+<td>
+(0.031)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6131,6 +7664,9 @@ region_label03 Central Luzon
 <td>
 -0.079<sup>***</sup>
 </td>
+<td>
+-0.093<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6147,9 +7683,14 @@ region_label03 Central Luzon
 <td>
 (0.017)
 </td>
+<td>
+(0.017)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6176,6 +7717,9 @@ region_label04 CALABARZON
 <td>
 -0.088<sup>***</sup>
 </td>
+<td>
+-0.107<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6192,9 +7736,14 @@ region_label04 CALABARZON
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6221,6 +7770,9 @@ region_label17 MIMAROPA
 <td>
 -0.148<sup>***</sup>
 </td>
+<td>
+-0.146<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6237,9 +7789,14 @@ region_label17 MIMAROPA
 <td>
 (0.041)
 </td>
+<td>
+(0.041)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6266,6 +7823,9 @@ region_label05 Bicol Region
 <td>
 -0.439<sup>***</sup>
 </td>
+<td>
+-0.422<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6282,9 +7842,14 @@ region_label05 Bicol Region
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6311,6 +7876,9 @@ region_label06 Western Visayas
 <td>
 0.007
 </td>
+<td>
+0.034<sup>*</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6327,9 +7895,14 @@ region_label06 Western Visayas
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6356,6 +7929,9 @@ region_label07 Central Visayas
 <td>
 -0.159<sup>***</sup>
 </td>
+<td>
+-0.197<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6372,9 +7948,14 @@ region_label07 Central Visayas
 <td>
 (0.018)
 </td>
+<td>
+(0.018)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6401,6 +7982,9 @@ region_label08 Eastern Visayas
 <td>
 -0.160<sup>***</sup>
 </td>
+<td>
+-0.145<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6417,9 +8001,14 @@ region_label08 Eastern Visayas
 <td>
 (0.029)
 </td>
+<td>
+(0.029)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6446,6 +8035,9 @@ region_label09 Zamboanga Peninsula
 <td>
 -0.305<sup>***</sup>
 </td>
+<td>
+-0.296<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6462,9 +8054,14 @@ region_label09 Zamboanga Peninsula
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6491,6 +8088,9 @@ region_label10 Northern Mindanao
 <td>
 -0.210<sup>***</sup>
 </td>
+<td>
+-0.221<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6507,9 +8107,14 @@ region_label10 Northern Mindanao
 <td>
 (0.024)
 </td>
+<td>
+(0.025)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6536,6 +8141,9 @@ region_label11 Davao Region
 <td>
 -0.055<sup>**</sup>
 </td>
+<td>
+-0.081<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6552,9 +8160,14 @@ region_label11 Davao Region
 <td>
 (0.022)
 </td>
+<td>
+(0.022)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6581,6 +8194,9 @@ region_label12 SOCCSKSARGEN
 <td>
 0.012
 </td>
+<td>
+0.057<sup>**</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6597,9 +8213,14 @@ region_label12 SOCCSKSARGEN
 <td>
 (0.027)
 </td>
+<td>
+(0.027)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6626,6 +8247,9 @@ region_label16 CARAGA Region
 <td>
 -0.144<sup>***</sup>
 </td>
+<td>
+-0.103<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6642,9 +8266,14 @@ region_label16 CARAGA Region
 <td>
 (0.036)
 </td>
+<td>
+(0.036)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6671,6 +8300,9 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 -0.474<sup>***</sup>
 </td>
+<td>
+-0.517<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6687,9 +8319,14 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 (0.088)
 </td>
+<td>
+(0.088)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6716,6 +8353,9 @@ urbanUrban
 <td>
 0.198<sup>***</sup>
 </td>
+<td>
+0.199<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6732,9 +8372,14 @@ urbanUrban
 <td>
 (0.011)
 </td>
+<td>
+(0.011)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6758,6 +8403,8 @@ factor(year)2015
 <td>
 0.040<sup>**</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6771,9 +8418,13 @@ factor(year)2015
 <td>
 (0.018)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6797,6 +8448,8 @@ factor(year)2018
 <td>
 0.292<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6810,9 +8463,13 @@ factor(year)2018
 <td>
 (0.034)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6839,6 +8496,9 @@ imr_beer
 <td>
 -1,100,938,675,904.000<sup>***</sup>
 </td>
+<td>
+-1,224,561,808,614.000<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6855,9 +8515,104 @@ imr_beer
 <td>
 (177,874,770,866.000)
 </td>
+<td>
+(177,023,904,913.000)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvbeer_b18):year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.611<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.084)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvbeer_b18):year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.410<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.090)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -6884,6 +8639,9 @@ Constant
 <td>
 2.215<sup>***</sup>
 </td>
+<td>
+1.174<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6900,6 +8658,9 @@ Constant
 <td>
 (0.119)
 </td>
+<td>
+(0.139)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6912,9 +8673,11 @@ Constant
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -6929,6 +8692,9 @@ Observations
 </td>
 <td>
 44,545
+</td>
+<td>
+65,867
 </td>
 <td>
 65,867
@@ -6950,6 +8716,9 @@ R<sup>2</sup>
 <td>
 0.135
 </td>
+<td>
+0.139
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -6966,6 +8735,9 @@ Adjusted R<sup>2</sup>
 </td>
 <td>
 0.134
+</td>
+<td>
+0.139
 </td>
 </tr>
 <tr>
@@ -6984,6 +8756,9 @@ Residual Std. Error
 <td>
 20.196 (df = 65838)
 </td>
+<td>
+20.140 (df = 65836)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7001,16 +8776,19 @@ F Statistic
 <td>
 365.826<sup>***</sup> (df = 28; 65838)
 </td>
+<td>
+355.613<sup>***</sup> (df = 30; 65836)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 <em>Note:</em>
 </td>
-<td colspan="4" style="text-align:right">
+<td colspan="5" style="text-align:right">
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05;
 <sup></strong></em></sup>p&lt;0.01
 </td>
@@ -7032,12 +8810,16 @@ heckman1_gin &lt;- nonzero_gin ~ log(uvgin) + log(toinc) + hhead_male + hhead_ag
 
 heckman1_ginPool &lt;- nonzero_gin ~ log(uvgin_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + I(members_age05below/members) + members_hgc + factor(year)
 
+heckman1_ginPoolInteraction &lt;- nonzero_gin ~ log(uvgin_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + I(members_age05below/members) + members_hgc
+
 stage1_vars &lt;- c(&quot;nonzero_gin&quot;, &quot;qtgin&quot;, &quot;uvgin&quot;, &quot;toinc&quot;, &quot;hhead_male&quot;, &quot;hhead_age&quot;, &quot;hhead_married&quot;, &quot;hhead_employed&quot;, &quot;members&quot;, &quot;members_adultmale&quot;, &quot;region_label&quot;, &quot;urban&quot;, &quot;members_age05below&quot;, &quot;members_hgc&quot;)
 
 # Gin Stage 2 Outcome
 heckman2_gin &lt;- log(qtgin) ~ log(uvgin) + log(toinc) + hhead_male + hhead_age + hhead_married + hhead_employed+ members + I(members_adultmale/members) + region_label + urban + imr_gin
 
 heckman2_ginPool &lt;- log(qtgin) ~ log(uvgin_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year) + imr_gin
+
+heckman2_ginPoolInteraction &lt;- log(qtgin) ~ log(uvgin_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + imr_gin
 
 
 #### Gin 2012 - Heckman ####
@@ -7128,31 +8910,53 @@ hm2_gPool &lt;- lm(
 )
 
 
-stargazer(hm2_g2012, hm2_g2015, hm2_g2018, hm2_gPool,
+#### Gin POOLED with Year Interaction Term - Heckman ####
+# Stage 1 Selection Model
+hm1_gInt &lt;- glm(
+  formula = heckman1_ginPoolInteraction, data = hesPooled, weights = rfact, family = binomial(link = &#39;probit&#39;)
+)
+
+# Calculate the inverse Mills ratio
+lambda_gin &lt;- predict(hm1_gInt, type = &quot;link&quot;)  # Linear predictor
+imr_gin &lt;- dnorm(lambda_gin) / pnorm(lambda_gin)  # Inverse Mills Ratio
+
+
+# Add the inverse Mills ratio to the data
+stage2_gInt &lt;- hesPooled %&gt;%
+  filter(if_all(.cols = all_of(stage1_vars), .fns = ~!is.na(.x))) %&gt;%
+  bind_cols(tibble(imr_gin = imr_gin))
+
+# Stage 2 Outcome Model
+hm2_gInt &lt;- lm(
+  formula = heckman2_ginPoolInteraction, data = stage2_gInt, weights = rfact, subset = (nonzero_gin == TRUE)
+)
+
+
+stargazer(hm2_g2012, hm2_g2015, hm2_g2018, hm2_gPool, hm2_gInt,
           type=&quot;html&quot;,
-          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;))</code></pre>
+          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;, &quot;Pooled, With Year Interaction&quot;))</code></pre>
 <table style="text-align:center">
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 <em>Dependent variable:</em>
 </td>
 </tr>
 <tr>
 <td>
 </td>
-<td colspan="4" style="border-bottom: 1px solid black">
+<td colspan="5" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 log(qtgin)
 </td>
 </tr>
@@ -7171,6 +8975,9 @@ log(qtgin)
 <td>
 Pooled
 </td>
+<td>
+Pooled, With Year Interaction
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7187,9 +8994,12 @@ Pooled
 <td>
 (4)
 </td>
+<td>
+(5)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -7204,6 +9014,8 @@ log(uvgin)
 </td>
 <td>
 1.150<sup>***</sup>
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7222,9 +9034,13 @@ log(uvgin)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7250,6 +9066,8 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7265,9 +9083,13 @@ log(toinc)
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7291,6 +9113,9 @@ log(uvgin_b18)
 <td>
 -0.998<sup>***</sup>
 </td>
+<td>
+-1.077<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7304,9 +9129,104 @@ log(uvgin_b18)
 <td>
 (0.025)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.809<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.282)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+3.293<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.425)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7330,6 +9250,9 @@ log(toinc_b18)
 <td>
 0.279<sup>***</sup>
 </td>
+<td>
+0.274<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7343,9 +9266,14 @@ log(toinc_b18)
 <td>
 (0.010)
 </td>
+<td>
+(0.010)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7372,6 +9300,9 @@ hhead_male
 <td>
 0.139<sup>***</sup>
 </td>
+<td>
+0.138<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7388,9 +9319,14 @@ hhead_male
 <td>
 (0.023)
 </td>
+<td>
+(0.023)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7417,6 +9353,9 @@ hhead_age
 <td>
 -0.0003
 </td>
+<td>
+-0.0003
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7433,9 +9372,14 @@ hhead_age
 <td>
 (0.001)
 </td>
+<td>
+(0.001)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7462,6 +9406,9 @@ hhead_married
 <td>
 -0.120<sup>***</sup>
 </td>
+<td>
+-0.117<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7478,9 +9425,14 @@ hhead_married
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7507,6 +9459,9 @@ hhead_employed
 <td>
 0.109<sup>***</sup>
 </td>
+<td>
+0.109<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7523,9 +9478,14 @@ hhead_employed
 <td>
 (0.018)
 </td>
+<td>
+(0.018)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7552,6 +9512,9 @@ members
 <td>
 0.018<sup>***</sup>
 </td>
+<td>
+0.018<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7568,9 +9531,14 @@ members
 <td>
 (0.003)
 </td>
+<td>
+(0.003)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7597,6 +9565,9 @@ I(members_adultmale/members)
 <td>
 0.461<sup>***</sup>
 </td>
+<td>
+0.465<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7613,9 +9584,14 @@ I(members_adultmale/members)
 <td>
 (0.034)
 </td>
+<td>
+(0.034)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7642,6 +9618,9 @@ region_label14 Cordillera Administrative Region
 <td>
 0.195<sup>***</sup>
 </td>
+<td>
+0.159<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7658,9 +9637,14 @@ region_label14 Cordillera Administrative Region
 <td>
 (0.042)
 </td>
+<td>
+(0.040)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7687,6 +9671,9 @@ region_label01 Ilocos Region
 <td>
 0.544<sup>***</sup>
 </td>
+<td>
+0.552<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7703,9 +9690,14 @@ region_label01 Ilocos Region
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7732,6 +9724,9 @@ region_label02 Cagayan Valley
 <td>
 0.746<sup>***</sup>
 </td>
+<td>
+0.745<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7748,9 +9743,14 @@ region_label02 Cagayan Valley
 <td>
 (0.028)
 </td>
+<td>
+(0.028)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7777,6 +9777,9 @@ region_label03 Central Luzon
 <td>
 -0.006
 </td>
+<td>
+0.016
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7793,9 +9796,14 @@ region_label03 Central Luzon
 <td>
 (0.027)
 </td>
+<td>
+(0.027)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7822,6 +9830,9 @@ region_label04 CALABARZON
 <td>
 0.276<sup>***</sup>
 </td>
+<td>
+0.222<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7838,9 +9849,14 @@ region_label04 CALABARZON
 <td>
 (0.028)
 </td>
+<td>
+(0.029)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7867,6 +9883,9 @@ region_label17 MIMAROPA
 <td>
 0.600<sup>***</sup>
 </td>
+<td>
+0.566<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7883,9 +9902,14 @@ region_label17 MIMAROPA
 <td>
 (0.031)
 </td>
+<td>
+(0.031)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7912,6 +9936,9 @@ region_label05 Bicol Region
 <td>
 -0.012
 </td>
+<td>
+-0.042
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7928,9 +9955,14 @@ region_label05 Bicol Region
 <td>
 (0.028)
 </td>
+<td>
+(0.029)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -7957,6 +9989,9 @@ region_label06 Western Visayas
 <td>
 0.094<sup>*</sup>
 </td>
+<td>
+0.111<sup>**</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -7973,9 +10008,14 @@ region_label06 Western Visayas
 <td>
 (0.053)
 </td>
+<td>
+(0.054)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8002,6 +10042,9 @@ region_label07 Central Visayas
 <td>
 -0.301<sup>***</sup>
 </td>
+<td>
+-0.275<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8018,9 +10061,14 @@ region_label07 Central Visayas
 <td>
 (0.067)
 </td>
+<td>
+(0.067)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8047,6 +10095,9 @@ region_label08 Eastern Visayas
 <td>
 -0.476<sup>***</sup>
 </td>
+<td>
+-0.440<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8063,9 +10114,14 @@ region_label08 Eastern Visayas
 <td>
 (0.050)
 </td>
+<td>
+(0.050)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8092,6 +10148,9 @@ region_label09 Zamboanga Peninsula
 <td>
 -0.351<sup>***</sup>
 </td>
+<td>
+-0.396<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8108,9 +10167,14 @@ region_label09 Zamboanga Peninsula
 <td>
 (0.123)
 </td>
+<td>
+(0.123)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8137,6 +10201,9 @@ region_label10 Northern Mindanao
 <td>
 -0.582<sup>***</sup>
 </td>
+<td>
+-0.554<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8153,9 +10220,14 @@ region_label10 Northern Mindanao
 <td>
 (0.101)
 </td>
+<td>
+(0.101)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8182,6 +10254,9 @@ region_label11 Davao Region
 <td>
 -0.125
 </td>
+<td>
+-0.175<sup>**</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8198,9 +10273,14 @@ region_label11 Davao Region
 <td>
 (0.080)
 </td>
+<td>
+(0.080)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8227,6 +10307,9 @@ region_label12 SOCCSKSARGEN
 <td>
 -0.284<sup>***</sup>
 </td>
+<td>
+-0.310<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8243,9 +10326,14 @@ region_label12 SOCCSKSARGEN
 <td>
 (0.107)
 </td>
+<td>
+(0.107)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8272,6 +10360,9 @@ region_label16 CARAGA Region
 <td>
 -0.329<sup>***</sup>
 </td>
+<td>
+-0.277<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8288,9 +10379,14 @@ region_label16 CARAGA Region
 <td>
 (0.105)
 </td>
+<td>
+(0.106)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8317,6 +10413,9 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 -0.584<sup>***</sup>
 </td>
+<td>
+-1.115<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8333,9 +10432,14 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 (0.149)
 </td>
+<td>
+(0.161)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8362,6 +10466,9 @@ urbanUrban
 <td>
 -0.056<sup>***</sup>
 </td>
+<td>
+-0.057<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8378,9 +10485,14 @@ urbanUrban
 <td>
 (0.016)
 </td>
+<td>
+(0.016)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8404,6 +10516,8 @@ factor(year)2015
 <td>
 0.067<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8417,9 +10531,13 @@ factor(year)2015
 <td>
 (0.017)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8443,6 +10561,8 @@ factor(year)2018
 <td>
 0.185<sup>***</sup>
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8456,9 +10576,13 @@ factor(year)2018
 <td>
 (0.029)
 </td>
+<td>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8485,6 +10609,9 @@ imr_gin
 <td>
 -764,271,137,197.000<sup>***</sup>
 </td>
+<td>
+-934,606,688,707.000<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8501,9 +10628,104 @@ imr_gin
 <td>
 (136,855,766,030.000)
 </td>
+<td>
+(137,752,221,494.000)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvgin_b18):year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.830<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.133)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvgin_b18):year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+1.474<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.195)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8530,6 +10752,9 @@ Constant
 <td>
 2.582<sup>***</sup>
 </td>
+<td>
+2.523<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8546,6 +10771,9 @@ Constant
 <td>
 (0.137)
 </td>
+<td>
+(0.137)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8558,9 +10786,11 @@ Constant
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -8575,6 +10805,9 @@ Observations
 </td>
 <td>
 26,916
+</td>
+<td>
+38,776
 </td>
 <td>
 38,776
@@ -8596,6 +10829,9 @@ R<sup>2</sup>
 <td>
 0.169
 </td>
+<td>
+0.170
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8612,6 +10848,9 @@ Adjusted R<sup>2</sup>
 </td>
 <td>
 0.168
+</td>
+<td>
+0.170
 </td>
 </tr>
 <tr>
@@ -8630,6 +10869,9 @@ Residual Std. Error
 <td>
 17.701 (df = 38747)
 </td>
+<td>
+17.687 (df = 38745)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8647,16 +10889,19 @@ F Statistic
 <td>
 281.255<sup>***</sup> (df = 28; 38747)
 </td>
+<td>
+265.016<sup>***</sup> (df = 30; 38745)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 <em>Note:</em>
 </td>
-<td colspan="4" style="text-align:right">
+<td colspan="5" style="text-align:right">
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05;
 <sup></strong></em></sup>p&lt;0.01
 </td>
@@ -8676,12 +10921,16 @@ heckman1_cigarette &lt;- nonzero_cigarette ~ log(uvcigarette) + log(toinc) + hhe
 
 heckman1_cigarettePool &lt;- nonzero_cigarette ~ log(uvcigarette_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + members_hgc + factor(year)
 
+heckman1_cigarettePoolInteraction &lt;- nonzero_cigarette ~ log(uvcigarette_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + members_hgc
+
 stage1_vars &lt;- c(&quot;nonzero_cigarette&quot;, &quot;qtcigarette&quot;, &quot;uvcigarette&quot;, &quot;toinc&quot;, &quot;hhead_male&quot;, &quot;hhead_age&quot;, &quot;hhead_married&quot;, &quot;hhead_employed&quot;, &quot;members&quot;, &quot;members_adultmale&quot;, &quot;region_label&quot;, &quot;urban&quot;, &quot;members_hgc&quot;)
 
 # Cigarettes Stage 2 Outcome
 heckman2_cigarette &lt;- log(qtcigarette) ~ log(uvcigarette) + log(toinc) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + imr_cigarette
 
-heckman2_cigarettePool &lt;- log(qtcigarette) ~ log(uvcigarette) + log(toinc) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year) + imr_cigarette
+heckman2_cigarettePool &lt;- log(qtcigarette) ~ log(uvcigarette_b18) + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + factor(year) + imr_cigarette
+
+heckman2_cigarettePoolInteraction &lt;- log(qtcigarette) ~ log(uvcigarette_b18)*year + log(toinc_b18) + hhead_male + hhead_age + hhead_married + hhead_employed + members + I(members_adultmale/members) + region_label + urban + imr_cigarette
 
 
 #### Cigarette 2012 - Heckman ####
@@ -8772,31 +11021,53 @@ hm2_cPool &lt;- lm(
 )
 
 
-stargazer(hm2_c2012, hm2_c2015, hm2_c2018, hm2_cPool,
+#### Cigarette POOLED with Year Interaction Term - Heckman ####
+# Stage 1 Selection Model
+hm1_cInt &lt;- glm(
+  formula = heckman1_cigarettePoolInteraction, data = hesPooled, weights = rfact, family = binomial(link = &#39;probit&#39;)
+)
+
+# Calculate the inverse Mills ratio
+lambda_cigarette &lt;- predict(hm1_cInt, type = &quot;link&quot;)  # Linear predictor
+imr_cigarette &lt;- dnorm(lambda_cigarette) / pnorm(lambda_cigarette)  # Inverse Mills Ratio
+
+
+# Add the inverse Mills ratio to the data
+stage2_cInt &lt;- hesPooled %&gt;%
+  filter(if_all(.cols = all_of(stage1_vars), .fns = ~!is.na(.x))) %&gt;%
+  bind_cols(tibble(imr_cigarette = imr_cigarette))
+
+# Stage 2 Outcome Model
+hm2_cInt &lt;- lm(
+  formula = heckman2_cigarettePoolInteraction, data = stage2_cInt, weights = rfact, subset = (nonzero_cigarette == TRUE)
+)
+
+
+stargazer(hm2_c2012, hm2_c2015, hm2_c2018, hm2_cPool, hm2_cInt,
           type=&quot;html&quot;,
-          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;))</code></pre>
+          column.labels = c(&quot;2012&quot;, &quot;2015&quot;, &quot;2018&quot;, &quot;Pooled&quot;, &quot;Pooled, With Year Interaction&quot;))</code></pre>
 <table style="text-align:center">
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 <em>Dependent variable:</em>
 </td>
 </tr>
 <tr>
 <td>
 </td>
-<td colspan="4" style="border-bottom: 1px solid black">
+<td colspan="5" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 </td>
-<td colspan="4">
+<td colspan="5">
 log(qtcigarette)
 </td>
 </tr>
@@ -8815,6 +11086,9 @@ log(qtcigarette)
 <td>
 Pooled
 </td>
+<td>
+Pooled, With Year Interaction
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -8831,9 +11105,12 @@ Pooled
 <td>
 (4)
 </td>
+<td>
+(5)
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -8850,7 +11127,8 @@ log(uvcigarette)
 -0.360<sup>***</sup>
 </td>
 <td>
--0.656<sup>***</sup>
+</td>
+<td>
 </td>
 </tr>
 <tr>
@@ -8866,11 +11144,14 @@ log(uvcigarette)
 (0.021)
 </td>
 <td>
-(0.018)
+</td>
+<td>
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8895,7 +11176,8 @@ log(toinc)
 0.410<sup>***</sup>
 </td>
 <td>
-0.364<sup>***</sup>
+</td>
+<td>
 </td>
 </tr>
 <tr>
@@ -8911,11 +11193,198 @@ log(toinc)
 (0.008)
 </td>
 <td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvcigarette_b18)
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.657<sup>***</sup>
+</td>
+<td>
+-0.961<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.018)
+</td>
+<td>
+(0.028)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.179<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.055)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+-0.030
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.047)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(toinc_b18)
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.365<sup>***</sup>
+</td>
+<td>
+0.366<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.006)
+</td>
+<td>
 (0.006)
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8940,7 +11409,10 @@ hhead_male
 0.065<sup>***</sup>
 </td>
 <td>
-0.114<sup>***</sup>
+0.113<sup>***</sup>
+</td>
+<td>
+0.116<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -8958,9 +11430,14 @@ hhead_male
 <td>
 (0.013)
 </td>
+<td>
+(0.013)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -8985,6 +11462,9 @@ hhead_age
 -0.003<sup>***</sup>
 </td>
 <td>
+-0.003<sup>***</sup>
+</td>
+<td>
 -0.002<sup>***</sup>
 </td>
 </tr>
@@ -9003,9 +11483,14 @@ hhead_age
 <td>
 (0.0003)
 </td>
+<td>
+(0.0003)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9032,6 +11517,9 @@ hhead_married
 <td>
 -0.070<sup>***</sup>
 </td>
+<td>
+-0.069<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -9048,9 +11536,14 @@ hhead_married
 <td>
 (0.011)
 </td>
+<td>
+(0.011)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9077,6 +11570,9 @@ hhead_employed
 <td>
 0.072<sup>***</sup>
 </td>
+<td>
+0.071<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -9093,9 +11589,14 @@ hhead_employed
 <td>
 (0.010)
 </td>
+<td>
+(0.010)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9122,6 +11623,9 @@ members
 <td>
 0.020<sup>***</sup>
 </td>
+<td>
+0.020<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -9138,9 +11642,14 @@ members
 <td>
 (0.002)
 </td>
+<td>
+(0.002)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9167,6 +11676,9 @@ I(members_adultmale/members)
 <td>
 0.443<sup>***</sup>
 </td>
+<td>
+0.440<sup>***</sup>
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -9183,9 +11695,14 @@ I(members_adultmale/members)
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9210,7 +11727,10 @@ region_label14 Cordillera Administrative Region
 2.342<sup>***</sup>
 </td>
 <td>
--0.093<sup>**</sup>
+-0.109<sup>***</sup>
+</td>
+<td>
+-0.216<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9228,9 +11748,14 @@ region_label14 Cordillera Administrative Region
 <td>
 (0.041)
 </td>
+<td>
+(0.042)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9255,6 +11780,9 @@ region_label01 Ilocos Region
 -0.409<sup>***</sup>
 </td>
 <td>
+-0.097<sup>***</sup>
+</td>
+<td>
 -0.091<sup>***</sup>
 </td>
 </tr>
@@ -9273,9 +11801,14 @@ region_label01 Ilocos Region
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9300,7 +11833,10 @@ region_label02 Cagayan Valley
 0.099<sup>*</sup>
 </td>
 <td>
-0.019
+0.009
+</td>
+<td>
+-0.006
 </td>
 </tr>
 <tr>
@@ -9318,9 +11854,14 @@ region_label02 Cagayan Valley
 <td>
 (0.023)
 </td>
+<td>
+(0.023)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9345,7 +11886,10 @@ region_label03 Central Luzon
 0.036
 </td>
 <td>
-0.364<sup>***</sup>
+0.368<sup>***</sup>
+</td>
+<td>
+0.391<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9363,9 +11907,14 @@ region_label03 Central Luzon
 <td>
 (0.014)
 </td>
+<td>
+(0.014)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9390,7 +11939,10 @@ region_label04 CALABARZON
 -0.934<sup>***</sup>
 </td>
 <td>
-0.249<sup>***</sup>
+0.238<sup>***</sup>
+</td>
+<td>
+0.232<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9408,9 +11960,14 @@ region_label04 CALABARZON
 <td>
 (0.015)
 </td>
+<td>
+(0.016)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9437,6 +11994,9 @@ region_label17 MIMAROPA
 <td>
 0.068<sup>***</sup>
 </td>
+<td>
+0.015
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -9453,9 +12013,14 @@ region_label17 MIMAROPA
 <td>
 (0.025)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9480,7 +12045,10 @@ region_label05 Bicol Region
 0.152<sup>***</sup>
 </td>
 <td>
--0.028
+-0.039<sup>**</sup>
+</td>
+<td>
+-0.056<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9498,9 +12066,14 @@ region_label05 Bicol Region
 <td>
 (0.019)
 </td>
+<td>
+(0.019)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9525,7 +12098,10 @@ region_label06 Western Visayas
 -0.121<sup>***</sup>
 </td>
 <td>
-0.015
+0.007
+</td>
+<td>
+-0.026
 </td>
 </tr>
 <tr>
@@ -9543,9 +12119,14 @@ region_label06 Western Visayas
 <td>
 (0.017)
 </td>
+<td>
+(0.017)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9570,7 +12151,10 @@ region_label07 Central Visayas
 -0.977<sup>***</sup>
 </td>
 <td>
--0.383<sup>***</sup>
+-0.389<sup>***</sup>
+</td>
+<td>
+-0.372<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9588,9 +12172,14 @@ region_label07 Central Visayas
 <td>
 (0.018)
 </td>
+<td>
+(0.018)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9615,7 +12204,10 @@ region_label08 Eastern Visayas
 0.975<sup>***</sup>
 </td>
 <td>
-0.017
+0.010
+</td>
+<td>
+-0.042<sup>*</sup>
 </td>
 </tr>
 <tr>
@@ -9633,9 +12225,14 @@ region_label08 Eastern Visayas
 <td>
 (0.023)
 </td>
+<td>
+(0.024)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9660,7 +12257,10 @@ region_label09 Zamboanga Peninsula
 0.021
 </td>
 <td>
--0.247<sup>***</sup>
+-0.250<sup>***</sup>
+</td>
+<td>
+-0.262<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9678,9 +12278,14 @@ region_label09 Zamboanga Peninsula
 <td>
 (0.021)
 </td>
+<td>
+(0.021)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9705,7 +12310,10 @@ region_label10 Northern Mindanao
 0.300<sup>***</sup>
 </td>
 <td>
--0.202<sup>***</sup>
+-0.218<sup>***</sup>
+</td>
+<td>
+-0.239<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9723,9 +12331,14 @@ region_label10 Northern Mindanao
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9750,7 +12363,10 @@ region_label11 Davao Region
 -0.017
 </td>
 <td>
-0.025
+0.016
+</td>
+<td>
+-0.029
 </td>
 </tr>
 <tr>
@@ -9768,9 +12384,14 @@ region_label11 Davao Region
 <td>
 (0.018)
 </td>
+<td>
+(0.019)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9795,7 +12416,10 @@ region_label12 SOCCSKSARGEN
 0.237<sup>***</sup>
 </td>
 <td>
-0.310<sup>***</sup>
+0.307<sup>***</sup>
+</td>
+<td>
+0.274<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -9813,9 +12437,14 @@ region_label12 SOCCSKSARGEN
 <td>
 (0.020)
 </td>
+<td>
+(0.020)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9840,7 +12469,10 @@ region_label16 CARAGA Region
 1.462<sup>***</sup>
 </td>
 <td>
-0.017
+0.007
+</td>
+<td>
+-0.036
 </td>
 </tr>
 <tr>
@@ -9856,11 +12488,16 @@ region_label16 CARAGA Region
 (0.258)
 </td>
 <td>
-(0.028)
+(0.029)
+</td>
+<td>
+(0.029)
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9885,7 +12522,10 @@ region_label15 Autonomous Region in Muslim Mindanao
 0.956<sup>***</sup>
 </td>
 <td>
--0.006
+-0.005
+</td>
+<td>
+-0.029
 </td>
 </tr>
 <tr>
@@ -9903,9 +12543,14 @@ region_label15 Autonomous Region in Muslim Mindanao
 <td>
 (0.025)
 </td>
+<td>
+(0.026)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9930,7 +12575,10 @@ urbanUrban
 -0.093<sup>***</sup>
 </td>
 <td>
-0.009
+0.011
+</td>
+<td>
+0.012
 </td>
 </tr>
 <tr>
@@ -9948,9 +12596,14 @@ urbanUrban
 <td>
 (0.008)
 </td>
+<td>
+(0.008)
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -9972,7 +12625,9 @@ factor(year)2015
 <td>
 </td>
 <td>
-0.206<sup>***</sup>
+0.163<sup>***</sup>
+</td>
+<td>
 </td>
 </tr>
 <tr>
@@ -9985,11 +12640,15 @@ factor(year)2015
 <td>
 </td>
 <td>
-(0.013)
+(0.011)
+</td>
+<td>
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -10011,7 +12670,9 @@ factor(year)2018
 <td>
 </td>
 <td>
-0.617<sup>***</sup>
+0.536<sup>***</sup>
+</td>
+<td>
 </td>
 </tr>
 <tr>
@@ -10024,11 +12685,15 @@ factor(year)2018
 <td>
 </td>
 <td>
-(0.029)
+(0.025)
+</td>
+<td>
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -10053,7 +12718,10 @@ imr_cigarette
 -9,347,693,995,718.000<sup>***</sup>
 </td>
 <td>
--2,594,480,897,018.000<sup>***</sup>
+-2,587,311,554,948.000<sup>***</sup>
+</td>
+<td>
+-2,187,017,638,914.000<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -10069,11 +12737,106 @@ imr_cigarette
 (1,412,757,545,859.000)
 </td>
 <td>
-(139,179,416,041.000)
+(138,956,871,010.000)
+</td>
+<td>
+(141,015,779,701.000)
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvcigarette_b18):year2015
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.408<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.051)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+log(uvcigarette_b18):year2018
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+0.527<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+</td>
+<td>
+(0.037)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
 </td>
 <td>
 </td>
@@ -10098,7 +12861,10 @@ Constant
 4.168<sup>***</sup>
 </td>
 <td>
-2.821<sup>***</sup>
+2.903<sup>***</sup>
+</td>
+<td>
+3.093<sup>***</sup>
 </td>
 </tr>
 <tr>
@@ -10114,7 +12880,10 @@ Constant
 (0.321)
 </td>
 <td>
-(0.072)
+(0.074)
+</td>
+<td>
+(0.075)
 </td>
 </tr>
 <tr>
@@ -10128,9 +12897,11 @@ Constant
 </td>
 <td>
 </td>
+<td>
+</td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
@@ -10145,6 +12916,9 @@ Observations
 </td>
 <td>
 62,133
+</td>
+<td>
+102,550
 </td>
 <td>
 102,550
@@ -10164,7 +12938,10 @@ R<sup>2</sup>
 0.153
 </td>
 <td>
-0.134
+0.135
+</td>
+<td>
+0.136
 </td>
 </tr>
 <tr>
@@ -10183,6 +12960,9 @@ Adjusted R<sup>2</sup>
 <td>
 0.134
 </td>
+<td>
+0.136
+</td>
 </tr>
 <tr>
 <td style="text-align:left">
@@ -10198,7 +12978,10 @@ Residual Std. Error
 14.620 (df = 62106)
 </td>
 <td>
-19.572 (df = 102521)
+19.570 (df = 102521)
+</td>
+<td>
+19.552 (df = 102519)
 </td>
 </tr>
 <tr>
@@ -10215,18 +12998,21 @@ F Statistic
 430.766<sup>***</sup> (df = 26; 62106)
 </td>
 <td>
-568.336<sup>***</sup> (df = 28; 102521)
+569.167<sup>***</sup> (df = 28; 102521)
+</td>
+<td>
+538.626<sup>***</sup> (df = 30; 102519)
 </td>
 </tr>
 <tr>
-<td colspan="5" style="border-bottom: 1px solid black">
+<td colspan="6" style="border-bottom: 1px solid black">
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
 <em>Note:</em>
 </td>
-<td colspan="4" style="text-align:right">
+<td colspan="5" style="text-align:right">
 <sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05;
 <sup></strong></em></sup>p&lt;0.01
 </td>
@@ -10240,11 +13026,11 @@ F Statistic
 <h3>Beer</h3>
 <table>
 <colgroup>
-<col width="33%" />
-<col width="13%" />
-<col width="12%" />
-<col width="14%" />
-<col width="26%" />
+<col width="48%" />
+<col width="9%" />
+<col width="8%" />
+<col width="9%" />
+<col width="23%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -10258,17 +13044,31 @@ F Statistic
 <tbody>
 <tr class="odd">
 <td align="center">Ordinary Least Squares</td>
-<td align="center">-1.199589</td>
-<td align="center">1.087852</td>
-<td align="center">-0.5740552</td>
-<td align="center">-0.4861028</td>
+<td align="center">-1.1996</td>
+<td align="center">1.0879</td>
+<td align="center">-0.5741</td>
+<td align="center">-0.4861</td>
 </tr>
 <tr class="even">
+<td align="center">Pooled OLS, with Year Interaction Terms</td>
+<td align="center">-1.0320</td>
+<td align="center">0.5435</td>
+<td align="center">-0.6304</td>
+<td align="center">NA</td>
+</tr>
+<tr class="odd">
 <td align="center">Heckman Two-Step Selection</td>
-<td align="center">-1.157586</td>
-<td align="center">1.120327</td>
-<td align="center">-0.7460088</td>
-<td align="center">-0.4710006</td>
+<td align="center">-1.1576</td>
+<td align="center">1.1203</td>
+<td align="center">-0.7460</td>
+<td align="center">-0.4710</td>
+</tr>
+<tr class="even">
+<td align="center">Pooled Heckman, with Year Interaction Terms</td>
+<td align="center">-1.0285</td>
+<td align="center">0.5825</td>
+<td align="center">-0.6184</td>
+<td align="center">NA</td>
 </tr>
 </tbody>
 </table>
@@ -10277,11 +13077,11 @@ F Statistic
 <h3>Gin</h3>
 <table>
 <colgroup>
-<col width="33%" />
-<col width="13%" />
-<col width="14%" />
-<col width="13%" />
-<col width="26%" />
+<col width="47%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="23%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -10295,17 +13095,31 @@ F Statistic
 <tbody>
 <tr class="odd">
 <td align="center">Ordinary Least Squares</td>
-<td align="center">-1.031829</td>
-<td align="center">-0.1913840</td>
-<td align="center">0.0289806</td>
-<td align="center">-0.9933478</td>
+<td align="center">-1.0318</td>
+<td align="center">-0.1914</td>
+<td align="center">0.0290</td>
+<td align="center">-0.9933</td>
 </tr>
 <tr class="even">
+<td align="center">Pooled OLS, with Year Interaction Terms</td>
+<td align="center">-1.0504</td>
+<td align="center">-0.2378</td>
+<td align="center">-0.4347</td>
+<td align="center">NA</td>
+</tr>
+<tr class="odd">
 <td align="center">Heckman Two-Step Selection</td>
-<td align="center">-1.049106</td>
-<td align="center">0.1074955</td>
-<td align="center">1.1498842</td>
-<td align="center">-0.9976398</td>
+<td align="center">-1.0491</td>
+<td align="center">0.1075</td>
+<td align="center">1.1499</td>
+<td align="center">-0.9976</td>
+</tr>
+<tr class="even">
+<td align="center">Pooled Heckman, with Year Interaction Terms</td>
+<td align="center">-1.0767</td>
+<td align="center">-0.2462</td>
+<td align="center">0.3977</td>
+<td align="center">NA</td>
 </tr>
 </tbody>
 </table>
@@ -10314,11 +13128,11 @@ F Statistic
 <h3>Cigarettes</h3>
 <table>
 <colgroup>
-<col width="32%" />
-<col width="12%" />
-<col width="14%" />
-<col width="14%" />
-<col width="25%" />
+<col width="47%" />
+<col width="9%" />
+<col width="9%" />
+<col width="9%" />
+<col width="23%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -10332,17 +13146,31 @@ F Statistic
 <tbody>
 <tr class="odd">
 <td align="center">Ordinary Least Squares</td>
-<td align="center">-1.034291</td>
-<td align="center">-0.1829062</td>
-<td align="center">-0.3941851</td>
-<td align="center">-0.6054532</td>
+<td align="center">-1.0343</td>
+<td align="center">-0.1829</td>
+<td align="center">-0.3942</td>
+<td align="center">-0.6055</td>
 </tr>
 <tr class="even">
+<td align="center">Pooled OLS, with Year Interaction Terms</td>
+<td align="center">-0.9744</td>
+<td align="center">-0.4586</td>
+<td align="center">-0.3648</td>
+<td align="center">NA</td>
+</tr>
+<tr class="odd">
 <td align="center">Heckman Two-Step Selection</td>
-<td align="center">-1.006148</td>
-<td align="center">-0.0997902</td>
-<td align="center">-0.3596368</td>
-<td align="center">-0.6560682</td>
+<td align="center">-1.0061</td>
+<td align="center">-0.0998</td>
+<td align="center">-0.3596</td>
+<td align="center">-0.6571</td>
+</tr>
+<tr class="even">
+<td align="center">Pooled Heckman, with Year Interaction Terms</td>
+<td align="center">-0.9609</td>
+<td align="center">-0.5533</td>
+<td align="center">-0.4344</td>
+<td align="center">NA</td>
 </tr>
 </tbody>
 </table>
